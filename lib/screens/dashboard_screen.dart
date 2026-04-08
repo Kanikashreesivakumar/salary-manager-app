@@ -1,62 +1,79 @@
 import 'package:flutter/material.dart';
+import '../services/storage_service.dart';
+import 'add_expense_screen.dart';
+import 'salary_screen.dart';
 
-class DashboardScreen extends StatelessWidget{
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context){
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Dashboard"),
-        centerTitle: true,
-      ),
-      body : Padding(
+      appBar: AppBar(title: const Text("Dashboard")),
+      body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Total Balance",
-              style: TextStyle(fontSize: 18),
+            const Text("Balance", style: TextStyle(fontSize: 18)),
+            Text(
+              "₹ ${StorageService.getBalance()}",
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
 
-            const SizedBox(height: 10),
-            const Text( " 20,000",
-            style: TextStyle(fontSize: 28,fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-              children:[
-                _buildButton(context, "Add Salary"),
-                _buildButton(context, "Add Expenses"),
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SalaryScreen()),
+                    );
+                    setState(() {});
+                  },
+                  child: const Text("Add Salary"),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
+                    );
+                    setState(() {});
+                  },
+                  child: const Text("Add Expense"),
+                ),
               ],
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
 
-            const ListTile(
-              title: Text("Food"),
-              trailing: Text("200"),
-            ),
+            const Text("Expenses", style: TextStyle(fontSize: 18)),
 
-            const ListTile(
-              title: Text("Travel"),
-              trailing: Text("500"),
-            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: StorageService.expenses.length,
+                itemBuilder: (context, index) {
+                  final e = StorageService.expenses[index];
+                  return ListTile(
+                    title: Text(e.title),
+                    trailing: Text("₹ ${e.amount}"),
+                  );
+                },
+              ),
+            )
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildButton(BuildContext context, String text) {
-    return ElevatedButton(
-      onPressed: () {},
-      child: Text(text),
     );
   }
 }
