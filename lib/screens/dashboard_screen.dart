@@ -21,12 +21,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     await Future.wait([
       StorageService.fetchSalary(),
       StorageService.fetchExpenses(),
     ]);
-    setState(() => _isLoading = false);
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -84,7 +87,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             context,
                             MaterialPageRoute(builder: (_) => const SalaryScreen()),
                           );
-                          _loadData(); // Ensure we fetch updated data
+                          _loadData(); // REFRESH FROM BACKEND
                         },
                       ),
                     ),
@@ -99,7 +102,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             context,
                             MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
                           );
-                          _loadData(); // Ensure we fetch updated data
+                          _loadData(); // REFRESH FROM BACKEND
                         },
                       ),
                     ),
@@ -152,7 +155,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         onDelete: () async {
                                           if (e.id != null) {
                                             await StorageService.deleteExpense(e.id!);
-                                            setState(() {});
+                                            _loadData(); // REFRESH AFTER DELETE
                                           }
                                         },
                                       );
