@@ -84,7 +84,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             context,
                             MaterialPageRoute(builder: (_) => const SalaryScreen()),
                           );
-                          setState(() {});
+                          _loadData(); // Ensure we fetch updated data
                         },
                       ),
                     ),
@@ -99,7 +99,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             context,
                             MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
                           );
-                          setState(() {});
+                          _loadData(); // Ensure we fetch updated data
                         },
                       ),
                     ),
