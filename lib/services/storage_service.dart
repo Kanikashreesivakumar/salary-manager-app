@@ -13,7 +13,10 @@ class StorageService{
   }
 
   static double getBalance() {
-    double totalExpense = expenses.fold(0, (sum, item) => sum + item.amount);
-    return salary - totalExpense;
+    return salary - totalExpense();
   }
+
+  static double totalExpense() {
+    return expenses.fold(0, (sum, item) => sum + item.amount);
   }
+}

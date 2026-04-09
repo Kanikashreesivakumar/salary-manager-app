@@ -15,8 +15,9 @@ class MyApp extends StatelessWidget {
       title: 'Salary Manager',
 
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        primarySwatch: Colors.indigo,
         scaffoldBackgroundColor: Colors.white,
+        useMaterial3: true,
       ),
 
 
