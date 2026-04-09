@@ -11,11 +11,11 @@ class SalaryScreen extends StatefulWidget {
 class _SalaryScreenState extends State<SalaryScreen> {
   final controller = TextEditingController();
 
-  void saveSalary() {
+  Future<void> saveSalary() async {
     final value = double.tryParse(controller.text);
     if (value != null) {
-      StorageService.setSalary(value);
-      Navigator.pop(context);
+      await StorageService.setSalary(value);
+      if (mounted) Navigator.pop(context);
     }
   }
 
@@ -30,7 +30,7 @@ class _SalaryScreenState extends State<SalaryScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
-        child: Column(
+        child: Stack(
           children: [
             Container(
               height: 100,
@@ -43,7 +43,7 @@ class _SalaryScreenState extends State<SalaryScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, -50, 20, 20),
+              padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
               child: Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(

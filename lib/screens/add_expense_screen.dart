@@ -13,15 +13,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final titleController = TextEditingController();
   final amountController = TextEditingController();
 
-  void saveExpense() {
+  Future<void> saveExpense() async {
     final title = titleController.text;
     final amount = double.tryParse(amountController.text);
 
     if (title.isNotEmpty && amount != null) {
-      StorageService.addExpense(
+      await StorageService.addExpense(
         Expense(title: title, amount: amount),
       );
-      Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
     }
   }
 
@@ -36,7 +36,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
-        child: Column(
+        child: Stack(
           children: [
             Container(
               height: 100,
@@ -49,7 +49,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, -50, 20, 20),
+              padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
               child: Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
