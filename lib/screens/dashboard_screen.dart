@@ -12,6 +12,22 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    await Future.wait([
+      StorageService.fetchSalary(),
+      StorageService.fetchExpenses(),
+    ]);
+    setState(() => _isLoading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,20 +134,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 15),
                       Expanded(
-                        child: StorageService.expenses.isEmpty
-                            ? Center(
-                                child: Text(
-                                  "No expenses yet!",
-                                  style: TextStyle(color: Colors.grey[500]),
-                                ),
-                              )
-                            : ListView.builder(
-                                itemCount: StorageService.expenses.length,
-                                itemBuilder: (context, index) {
-                                  final e = StorageService.expenses[index];
-                                  return ExpenseCard(expense: e);
-                                },
-                              ),
+                        child: _isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : StorageService.expenses.isEmpty
+                                ? Center(
+                                    child: Text(
+                                      "No expenses yet!",
+                                      style: TextStyle(color: Colors.grey[500]),
+                                    ),
+                                  )
+                                : ListView.builder(
+                                    itemCount: StorageService.expenses.length,
+                                    itemBuilder: (context, index) {
+                                      final e = StorageService.expenses[index];
+                                      return ExpenseCard(expense: e);
+                                    },
+                                  ),
                       ),
                     ],
                   ),
