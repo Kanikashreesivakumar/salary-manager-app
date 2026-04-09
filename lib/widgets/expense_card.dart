@@ -3,8 +3,9 @@ import '../models/expense_model.dart';
 
 class ExpenseCard extends StatelessWidget {
   final Expense expense;
+  final VoidCallback onDelete;
 
-  const ExpenseCard({super.key, required this.expense});
+  const ExpenseCard({super.key, required this.expense, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +27,6 @@ class ExpenseCard extends StatelessWidget {
         child: IntrinsicHeight(
           child: Row(
             children: [
-              // Decorative Side Indicator
               Container(
                 width: 6,
                 color: Colors.redAccent,
@@ -36,7 +36,6 @@ class ExpenseCard extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   child: Row(
                     children: [
-                      // Icon Container
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -50,7 +49,6 @@ class ExpenseCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      // Title and Category
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,7 +75,6 @@ class ExpenseCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      // Amount and Time
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -90,13 +87,9 @@ class ExpenseCard extends StatelessWidget {
                               color: Colors.redAccent,
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            "Today",
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey[400],
-                            ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.grey, size: 20),
+                            onPressed: onDelete,
                           ),
                         ],
                       ),

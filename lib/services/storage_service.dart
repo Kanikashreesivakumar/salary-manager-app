@@ -40,10 +40,7 @@ class StorageService {
       final response = await http.get(Uri.parse('$baseUrl/expenses'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        expenses = data.map((e) => Expense(
-          title: e['title'],
-          amount: double.parse(e['amount'].toString()),
-        )).toList();
+        expenses = data.map((e) => Expense.fromJson(e)).toList();
       }
     } catch (e) {
       print("Error fetching expenses: $e");
@@ -52,7 +49,7 @@ class StorageService {
 
   static Future<void> addExpense(Expense expense) async {
     try {
-      await http.post(
+      final response = await http.post(
         Uri.parse('$baseUrl/expenses'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
@@ -60,18 +57,31 @@ class StorageService {
           'amount': expense.amount,
         }),
       );
-      expenses.insert(0, expense); // Update local list
+      if (response.statusCode == 200) {
+        await fetchExpenses(); // Refresh to get the generated ID
+      }
     } catch (e) {
       print("Error adding expense: $e");
     }
   }
 
+  static Future<void> deleteExpense(int id) async {
+    try {
+      final response = await http.delete(Uri.parse('$baseUrl/expenses/$id'));
+      if (response.statusCode == 200) {
+        expenses.removeWhere((e) => e.id == id);
+      }
+    } catch (e) {
+      print("Error deleting expense: $e");
+    }
+  }
+
   static double getBalance() {
-    double total = expenses.fold(0, (sum, item) => sum + item.amount);
+    double total = expenses.fold(0.0, (sum, item) => sum + item.amount);
     return salary - total;
   }
 
   static double totalExpense() {
-    return expenses.fold(0, (sum, item) => sum + item.amount);
+    return expenses.fold(0.0, (sum, item) => sum + item.amount);
   }
 }

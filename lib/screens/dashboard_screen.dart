@@ -147,7 +147,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     itemCount: StorageService.expenses.length,
                                     itemBuilder: (context, index) {
                                       final e = StorageService.expenses[index];
-                                      return ExpenseCard(expense: e);
+                                      return ExpenseCard(
+                                        expense: e,
+                                        onDelete: () async {
+                                          if (e.id != null) {
+                                            await StorageService.deleteExpense(e.id!);
+                                            setState(() {});
+                                          }
+                                        },
+                                      );
                                     },
                                   ),
                       ),
