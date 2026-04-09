@@ -66,7 +66,22 @@ class SummaryScreen extends StatelessWidget {
                             padding: const EdgeInsets.only(bottom: 20),
                             itemBuilder: (context, index) {
                               final e = StorageService.expenses[index];
-                              return ExpenseCard(expense: e);
+                              return StatefulBuilder(
+                                builder: (context, setState) {
+                                  return ExpenseCard(
+                                    expense: e,
+                                    onDelete: () async {
+                                      if (e.id != null) {
+                                        await StorageService.deleteExpense(e.id!);
+                                        // We need to refresh the parent UI
+                                        Navigator.of(context).pushReplacement(
+                                          MaterialPageRoute(builder: (_) => const SummaryScreen()),
+                                        );
+                                      }
+                                    },
+                                  );
+                                }
+                              );
                             },
                           ),
                   ),
