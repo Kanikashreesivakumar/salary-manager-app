@@ -3,6 +3,7 @@ import '../services/storage_service.dart';
 import '../widgets/expense_card.dart';
 import 'add_expense_screen.dart';
 import 'salary_screen.dart';
+import 'login_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -51,13 +52,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   children: [
-                    const Text(
-                      "Total Balance",
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
-                        letterSpacing: 1,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const SizedBox(width: 48), // Spacer
+                        const Text(
+                          "Total Balance",
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 16,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.logout, color: Colors.white),
+                          onPressed: () async {
+                            await StorageService.logout();
+                            if (mounted) {
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                                (route) => false,
+                              );
+                            }
+                          },
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     Text(
