@@ -170,11 +170,21 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                          onPressed: () async {
+                            final success = await StorageService.login(
+                              emailController.text,
+                              passwordController.text,
                             );
+                            if (success && mounted) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                              );
+                            } else if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Invalid email or password")),
+                              );
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
@@ -202,11 +212,19 @@ class _LoginScreenState extends State<LoginScreen> {
                             "Don't have an account? ",
                             style: TextStyle(color: Colors.grey[600]),
                           ),
-                          const Text(
-                            "Sign Up",
-                            style: TextStyle(
-                              color: Color(0xFF1A237E),
-                              fontWeight: FontWeight.bold,
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const SignupScreen()),
+                              );
+                            },
+                            child: const Text(
+                              "Sign Up",
+                              style: TextStyle(
+                                color: Color(0xFF1A237E),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
