@@ -1,13 +1,24 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/expense_model.dart';
 
 class StorageService {
-  // Use 10.0.2.2 for Android Emulator, or your IP address for physical devices
   static const String baseUrl = 'http://10.0.2.2:3000';
 
   static double salary = 0;
   static List<Expense> expenses = [];
+  static String? _token;
+
+  static Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    _token = prefs.getString('auth_token');
+  }
+
+  static Map<String, String> get _headers => {
+        'Content-Type': 'application/json',
+        if (_token != null) 'Authorization': 'Bearer $_token',
+      };
 
   static Future<bool> signup(String name, String email, String password) async {
     try {
@@ -16,7 +27,12 @@ class StorageService {
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'name': name, 'email': email, 'password': password}),
       );
-      return response.statusCode == 201;
+      if (response.statusCode == 201) {
+        final data = json.decode(response.body);
+        await _saveToken(data['token']);
+        return true;
+      }
+      return false;
     } catch (e) {
       print("Signup error: $e");
       return false;
@@ -30,16 +46,33 @@ class StorageService {
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'email': email, 'password': password}),
       );
-      return response.statusCode == 200;
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        await _saveToken(data['token']);
+        return true;
+      }
+      return false;
     } catch (e) {
       print("Login error: $e");
       return false;
     }
   }
 
+  static Future<void> _saveToken(String token) async {
+    _token = token;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_token', token);
+  }
+
+  static Future<void> logout() async {
+    _token = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
+  }
+
   static Future<void> fetchSalary() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/salary'));
+      final response = await http.get(Uri.parse('$baseUrl/salary'), headers: _headers);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = json.decode(response.body);
         salary = double.tryParse(data['amount'].toString()) ?? 0.0;
@@ -53,7 +86,7 @@ class StorageService {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/salary'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _headers,
         body: json.encode({'amount': value}),
       );
       if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -66,7 +99,7 @@ class StorageService {
 
   static Future<void> fetchExpenses() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/expenses'));
+      final response = await http.get(Uri.parse('$baseUrl/expenses'), headers: _headers);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final List<dynamic> data = json.decode(response.body);
         expenses = data.map((e) => Expense.fromJson(e)).toList();
@@ -80,14 +113,14 @@ class StorageService {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/expenses'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _headers,
         body: json.encode({
           'title': expense.title,
           'amount': expense.amount,
         }),
       );
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        await fetchExpenses(); // Refresh list from DB
+        await fetchExpenses();
       }
     } catch (e) {
       print("Error adding expense: $e");
@@ -96,7 +129,7 @@ class StorageService {
 
   static Future<void> deleteExpense(int id) async {
     try {
-      final response = await http.delete(Uri.parse('$baseUrl/expenses/$id'));
+      final response = await http.delete(Uri.parse('$baseUrl/expenses/$id'), headers: _headers);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         expenses.removeWhere((e) => e.id == id);
       }
