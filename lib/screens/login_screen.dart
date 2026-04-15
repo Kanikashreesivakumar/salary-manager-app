@@ -14,6 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         child: Column(
           children: [
+            // ... (rest of header stays same)
             Expanded(
               flex: 3,
               child: Column(
@@ -86,13 +88,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     topLeft: Radius.circular(50),
                     topRight: Radius.circular(50),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 15,
-                      offset: Offset(0, -5),
-                    )
-                  ],
                 ),
                 child: SingleChildScrollView(
                   child: Column(
@@ -100,27 +95,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       const Text(
                         "Welcome Back",
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A237E),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "Please login to your account",
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
                       ),
                       const SizedBox(height: 40),
                       _buildTextField(
                         controller: emailController,
                         label: "Email Address",
                         icon: Icons.email_rounded,
-                        keyboardType: TextInputType.emailAddress,
                       ),
                       const SizedBox(height: 25),
                       _buildTextField(
@@ -154,80 +135,55 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 30),
-                      Container(
+                      SizedBox(
                         width: double.infinity,
                         height: 60,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.indigo.withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
-                            )
-                          ],
-                        ),
                         child: ElevatedButton(
-                          onPressed: () async {
-                            final success = await StorageService.login(
-                              emailController.text,
-                              passwordController.text,
-                            );
-                            if (success && mounted) {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                          onPressed: _isLoading ? null : () async {
+                            setState(() => _isLoading = true);
+                            try {
+                              final success = await StorageService.login(
+                                emailController.text.trim(),
+                                passwordController.text,
                               );
-                            } else if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Invalid email or password")),
-                              );
+                              if (success && mounted) {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                                );
+                              } else if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Invalid email or password")),
+                                );
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Error: ${e.toString()}")),
+                                );
+                              }
+                            } finally {
+                              if (mounted) setState(() => _isLoading = false);
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
+                            backgroundColor: const Color(0xFF1A237E),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           ),
-                          child: const Text(
-                            "SIGN IN",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 1.5,
-                            ),
-                          ),
+                          child: _isLoading 
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : const Text("SIGN IN", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                         ),
                       ),
                       const SizedBox(height: 30),
+                      // ... (Signup link stays same)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            "Don't have an account? ",
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
+                          Text("Don't have an account? ", style: TextStyle(color: Colors.grey[600])),
                           GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const SignupScreen()),
-                              );
-                            },
-                            child: const Text(
-                              "Sign Up",
-                              style: TextStyle(
-                                color: Color(0xFF1A237E),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SignupScreen())),
+                            child: const Text("Sign Up", style: TextStyle(color: Color(0xFF1A237E), fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
