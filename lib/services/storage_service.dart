@@ -9,6 +9,34 @@ class StorageService {
   static double salary = 0;
   static List<Expense> expenses = [];
 
+  static Future<bool> signup(String name, String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/signup'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'name': name, 'email': email, 'password': password}),
+      );
+      return response.statusCode == 201;
+    } catch (e) {
+      print("Signup error: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> login(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'email': email, 'password': password}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      print("Login error: $e");
+      return false;
+    }
+  }
+
   static Future<void> fetchSalary() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/salary'));
