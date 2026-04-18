@@ -4,6 +4,7 @@ import '../widgets/expense_card.dart';
 import 'add_expense_screen.dart';
 import 'salary_screen.dart';
 import 'login_screen.dart';
+import 'summary_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -36,172 +37,182 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blueAccent, Colors.indigo],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // HEADER / BALANCE SECTION
-              Padding(
-                padding: const EdgeInsets.all(24.0),
+      backgroundColor: const Color(0xFFF0F2F5),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 220.0,
+            floating: false,
+            pinned: true,
+            backgroundColor: const Color(0xFF1A237E),
+            elevation: 0,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const SizedBox(width: 48), // Spacer
-                        const Text(
-                          "Total Balance",
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 16,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.logout, color: Colors.white),
-                          onPressed: () async {
-                            await StorageService.logout();
-                            if (mounted) {
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(builder: (_) => const LoginScreen()),
-                                (route) => false,
-                              );
-                            }
-                          },
-                        ),
-                      ],
+                    const Text(
+                      "Total Balance",
+                      style: TextStyle(color: Colors.white70, fontSize: 16),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     Text(
                       "₹ ${StorageService.getBalance().toStringAsFixed(2)}",
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 36,
+                        fontSize: 42,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
               ),
-
-              // ACTION BUTTONS
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _ActionButton(
-                        label: "Add Salary",
-                        icon: Icons.add_chart,
-                        color: Colors.greenAccent,
-                        onTap: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const SalaryScreen()),
-                          );
-                          _loadData(); // REFRESH FROM BACKEND
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _ActionButton(
-                        label: "Add Expense",
-                        icon: Icons.remove_circle_outline,
-                        color: Colors.orangeAccent,
-                        onTap: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
-                          );
-                          _loadData(); // REFRESH FROM BACKEND
-                        },
-                      ),
-                    ),
-                  ],
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.analytics_outlined, color: Colors.white),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SummaryScreen()),
                 ),
               ),
-
-              const SizedBox(height: 30),
-
-              // EXPENSES LIST SECTION
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF8F9FE),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(40),
-                      topRight: Radius.circular(40),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Recent Expenses",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      Expanded(
-                        child: _isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : StorageService.expenses.isEmpty
-                                ? Center(
-                                    child: Text(
-                                      "No expenses yet!",
-                                      style: TextStyle(color: Colors.grey[500]),
-                                    ),
-                                  )
-                                : ListView.builder(
-                                    itemCount: StorageService.expenses.length,
-                                    itemBuilder: (context, index) {
-                                      final e = StorageService.expenses[index];
-                                      return ExpenseCard(
-                                        expense: e,
-                                        onDelete: () async {
-                                          if (e.id != null) {
-                                            await StorageService.deleteExpense(e.id!);
-                                            _loadData(); // REFRESH AFTER DELETE
-                                          }
-                                        },
-                                      );
-                                    },
-                                  ),
-                      ),
-                    ],
-                  ),
-                ),
+              IconButton(
+                icon: const Icon(Icons.logout, color: Colors.white),
+                onPressed: () async {
+                  await StorageService.logout();
+                  if (mounted) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      (route) => false,
+                    );
+                  }
+                },
               ),
             ],
           ),
-        ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _QuickActionCard(
+                      title: "Salary",
+                      subtitle: "Add Income",
+                      icon: Icons.account_balance_wallet,
+                      color: Colors.green,
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const SalaryScreen()),
+                        );
+                        _loadData();
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: _QuickActionCard(
+                      title: "Expense",
+                      subtitle: "Add Spend",
+                      icon: Icons.shopping_cart,
+                      color: Colors.orange,
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
+                        );
+                        _loadData();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Recent Transactions",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  TextButton(
+                    onPressed: () {},
+                    child: const Text("See All"),
+                  )
+                ],
+              ),
+            ),
+          ),
+          _isLoading
+              ? const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              : StorageService.expenses.isEmpty
+                  ? SliverFillRemaining(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.receipt_long, size: 64, color: Colors.grey[400]),
+                            const SizedBox(height: 10),
+                            Text("No transactions yet", style: TextStyle(color: Colors.grey[500])),
+                          ],
+                        ),
+                      ),
+                    )
+                  : SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final e = StorageService.expenses[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: ExpenseCard(
+                                expense: e,
+                                onDelete: () async {
+                                  if (e.id != null) {
+                                    await StorageService.deleteExpense(e.id!);
+                                    _loadData();
+                                  }
+                                },
+                              ),
+                            );
+                          },
+                          childCount: StorageService.expenses.length,
+                        ),
+                      ),
+                    ),
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
       ),
     );
   }
 }
 
-class _ActionButton extends StatelessWidget {
-  final String label;
+class _QuickActionCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
 
-  const _ActionButton({
-    required this.label,
+  const _QuickActionCard({
+    required this.title,
+    required this.subtitle,
     required this.icon,
     required this.color,
     required this.onTap,
@@ -209,25 +220,41 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            )
+          ],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
               ),
+              child: Icon(icon, color: color),
+            ),
+            const SizedBox(height: 15),
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            Text(
+              subtitle,
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
             ),
           ],
         ),
