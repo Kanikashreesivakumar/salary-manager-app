@@ -12,6 +12,15 @@ class AddExpenseScreen extends StatefulWidget {
 class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final titleController = TextEditingController();
   final amountController = TextEditingController();
+  String selectedCategory = 'Shopping';
+
+  final List<Map<String, dynamic>> categories = [
+    {'name': 'Shopping', 'icon': Icons.shopping_bag, 'color': Colors.orange},
+    {'name': 'Food', 'icon': Icons.restaurant, 'color': Colors.red},
+    {'name': 'Transport', 'icon': Icons.directions_car, 'color': Colors.blue},
+    {'name': 'Bills', 'icon': Icons.receipt, 'color': Colors.purple},
+    {'name': 'Other', 'icon': Icons.more_horiz, 'color': Colors.grey},
+  ];
 
   Future<void> saveExpense() async {
     final title = titleController.text;
@@ -19,7 +28,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
     if (title.isNotEmpty && amount != null) {
       await StorageService.addExpense(
-        Expense(title: title, amount: amount),
+        Expense(title: "$selectedCategory: $title", amount: amount),
       );
       if (mounted) Navigator.pop(context);
     }
@@ -28,86 +37,87 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Add Expense", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.indigo,
+        title: const Text("New Expense", style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
       ),
       body: SingleChildScrollView(
-        child: Stack(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
+            const Text("Category", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 15),
+            SizedBox(
               height: 100,
-              decoration: const BoxDecoration(
-                color: Colors.indigo,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final cat = categories[index];
+                  final isSelected = selectedCategory == cat['name'];
+                  return GestureDetector(
+                    onTap: () => setState(() => selectedCategory = cat['name']),
+                    child: Container(
+                      width: 80,
+                      margin: const EdgeInsets.only(right: 15),
+                      decoration: BoxDecoration(
+                        color: isSelected ? cat['color'] : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(cat['icon'], color: isSelected ? Colors.white : Colors.grey[600]),
+                          const SizedBox(height: 8),
+                          Text(
+                            cat['name'],
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.grey[600],
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
+            const SizedBox(height: 40),
+            _buildInputLabel("Expense Name"),
+            _buildTextField(
+              controller: titleController,
+              hint: "e.g. Nike Shoes",
+              icon: Icons.edit,
+            ),
+            const SizedBox(height: 25),
+            _buildInputLabel("Amount"),
+            _buildTextField(
+              controller: amountController,
+              hint: "0.00",
+              icon: Icons.currency_rupee,
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 50),
+            SizedBox(
+              width: double.infinity,
+              height: 60,
+              child: ElevatedButton(
+                onPressed: saveExpense,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  elevation: 0,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Expense Details",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    _buildTextField(
-                      controller: titleController,
-                      label: "What did you spend on?",
-                      icon: Icons.title,
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      controller: amountController,
-                      label: "Amount (₹)",
-                      icon: Icons.currency_rupee,
-                      keyboardType: TextInputType.number,
-                    ),
-                    const SizedBox(height: 40),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: ElevatedButton(
-                        onPressed: saveExpense,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.indigo,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 5,
-                        ),
-                        child: const Text(
-                          "Save Expense",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    )
-                  ],
+                child: const Text(
+                  "Create Expense",
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -117,32 +127,32 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
   }
 
+  Widget _buildInputLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black54)),
+    );
+  }
+
   Widget _buildTextField({
     required TextEditingController controller,
-    required String label,
+    required String hint,
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
   }) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.indigo),
+        hintText: hint,
+        prefixIcon: Icon(icon, color: Colors.black),
         filled: true,
         fillColor: Colors.grey[50],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey[200]!),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.indigo, width: 2),
-        ),
+        contentPadding: const EdgeInsets.all(20),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(color: Colors.grey[200]!)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(color: Colors.grey[200]!)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: const BorderSide(color: Colors.black, width: 2)),
       ),
     );
   }
