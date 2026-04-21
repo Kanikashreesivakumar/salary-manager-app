@@ -59,7 +59,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
           children: [
             // CHART SELECTOR
             Container(
-              margin: const EdgeInsets.bottom(20),
+              margin: const EdgeInsets.only(bottom: 20),
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: Colors.grey[200],
@@ -175,10 +175,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
             sideTitles: SideTitles(
               showTitles: true,
               getTitlesWidget: (value, meta) {
-                return SideTitleWidget(
-                  axisSide: meta.axisSide,
-                  child: Text(value == 0 ? 'Income' : 'Expense', style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 12)),
-                );
+                return Text(value == 0 ? 'Income' : 'Expense', style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 12));
               },
             ),
           ),
@@ -221,10 +218,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
               getTitlesWidget: (value, meta) {
                 var keys = data.entries.where((e) => e.value > 0).map((e) => e.key).toList();
                 if (value.toInt() < keys.length) {
-                  return SideTitleWidget(
-                    axisSide: meta.axisSide,
-                    child: Text(keys[value.toInt()].substring(0, 3), style: const TextStyle(color: Colors.grey, fontSize: 10)),
-                  );
+                  return Text(keys[value.toInt()].substring(0, 3), style: const TextStyle(color: Colors.grey, fontSize: 10));
                 }
                 return const SizedBox();
               },
