@@ -9,10 +9,18 @@ class StorageService {
   static double salary = 0;
   static List<Expense> expenses = [];
   static String? _token;
+  static bool isDarkMode = false;
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('auth_token');
+    isDarkMode = prefs.getBool('isDarkMode') ?? false;
+  }
+
+  static Future<void> toggleTheme(bool value) async {
+    isDarkMode = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isDarkMode', value);
   }
 
   static Map<String, String> get _headers => {
@@ -135,6 +143,24 @@ class StorageService {
       }
     } catch (e) {
       print("Error deleting expense: $e");
+    }
+  }
+
+  static Future<void> updateExpense(int id, String title, double amount) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/expenses/$id'),
+        headers: _headers,
+        body: json.encode({
+          'title': title,
+          'amount': amount,
+        }),
+      );
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        await fetchExpenses();
+      }
+    } catch (e) {
+      print("Error updating expense: $e");
     }
   }
 
