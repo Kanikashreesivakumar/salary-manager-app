@@ -163,7 +163,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             final e = filteredExpenses[index];
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: ExpenseCard(expense: e, onDelete: () async { if (e.id != null) { await StorageService.deleteExpense(e.id!); _loadData(); } }),
+                              child: ExpenseCard(
+                                expense: e,
+                                onRefresh: _loadData,
+                              ),
                             );
                           },
                           childCount: filteredExpenses.length,
